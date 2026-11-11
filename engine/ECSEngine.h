@@ -72,8 +72,12 @@ ECSEngine<Components...>::~ECSEngine() {}
 
 template <typename... Components>
 void ECSEngine<Components...>::Run() {
-    ProcessEvents();
-    mSystemManager.Run(this);
+    while (mWindowManager.GetWindow()->isOpen()) {
+        ProcessEvents();
+        mSystemManager.Run(this);
+        mWindowManager.GetWindow()->clear();
+        mWindowManager.GetWindow()->display();
+    }
 }
 
 template <typename... Components>
