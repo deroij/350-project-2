@@ -71,11 +71,31 @@ template <typename... Components>
 ECSEngine<Components...>::~ECSEngine() {}
 
 template <typename... Components>
-void ECSEngine<Components...>::Run() {}
+void ECSEngine<Components...>::Run() {
+    ProcessEvents();
+    mSystemManager.Run(this);
+}
 
 template <typename... Components>
 bool ECSEngine<Components...>::ProcessEvents() {
-    return true;
+    while (const std::optional event = mWindowManager.GetWindow()->pollEvent())
+    {
+        if (event->is<sf::Event::Closed>())
+        {
+            mWindowManager.GetWindow()->close();
+            return true;
+        }
+        else if (event->is<sf::Event::Resized>())
+        {
+            return true;
+        }
+        else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) // Just temp key press handler
+        {
+            //int key = static_cast<int>(keyPressed->scancode);
+            return true;
+        }
+    }
+    return false;
 }
 
 template <typename... Components>

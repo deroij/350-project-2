@@ -52,6 +52,10 @@ public:
 
     template <typename T>
     void AddComponent(EntityID entity, T component) {
+        if (HasComponent<T>(entity)) {
+            return;
+        }
+        
         size_t componentIndex = GetComponentIndex<T>();
         auto& storage = GetComponentStorage<T>();
         size_t storageIndex;
