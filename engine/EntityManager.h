@@ -14,36 +14,108 @@ template <typename... Components>
 class EntityManager {
 public:
     static constexpr size_t kNullComponent = std::numeric_limits<size_t>::max();
-    [[nodiscard]] EntityID CreateEntity(const std::string& name) { return 0; }
-
-    void RemoveEntity(EntityID entity) {}
+    [[nodiscard]] EntityID CreateEntity(const std::string& name) {
+        for (size_t i = 0; i < mFreeEntities.size(); ++i) {
+            if (mFreeEntities[i]) {
+                mFreeEntities[i] = false;
+                mEntities[i] = Entity(i, name);
+                mEntities[i].mComponents.resize(sizeof...(Components), kNullComponent);
+                return i;
+            }
+        }
+        EntityID id = mEntities.size();
+        mEntities.push_back(Entity(id, name));
+        mEntities.back().mComponents.resize(sizeof...(Components), kNullComponent);
+        mFreeEntities.push_back(false);
+        return id;
+    }
 
     template <typename T>
-    void AddComponent(EntityID entity, T component) {}
+    void RemoveComponentIfPresent(EntityID entity) {
+        size_t componentIndex = GetComponentIndex<T>();
+        size_t storageIndex = mEntities[entity].mComponents[componentIndex];
+
+        if (storageIndex != kNullComponent) {
+            auto& storage = GetComponentStorage<T>();
+            storage.mValid[storageIndex] = false;
+            storage.mFreeList.push_back(storageIndex);
+            mEntities[entity].mComponents[componentIndex] = kNullComponent;
+        }
+    }
+
+    void RemoveEntity(EntityID entity) {
+        // Expands to cover all cases.
+        (RemoveComponentIfPresent<Components>(entity), ...);
+
+        mFreeEntities[entity] = true;
+    }
 
     template <typename T>
-    void RemoveComponent(EntityID entity) {}
+    void AddComponent(EntityID entity, T component) {
+        size_t componentIndex = GetComponentIndex<T>();
+        auto& storage = GetComponentStorage<T>();
+        size_t storageIndex;
+
+        if (!storage.mFreeList.empty()) {
+            storageIndex = storage.mFreeList.back();
+            storage.mFreeList.pop_back();
+            storage.mStorage[storageIndex] = component;
+            storage.mValid[storageIndex] = true;
+        }
+        else {
+            storageIndex = storage.mStorage.size();
+            storage.mStorage.push_back(component);
+            storage.mValid.push_back(true);
+        }
+
+        mEntities[entity].mComponents[componentIndex] = storageIndex;
+    }
+
+    template <typename T>
+    void RemoveComponent(EntityID entity) {
+        RemoveComponentIfPresent<T>(entity);
+    }
 
     template <typename T>
     bool HasComponent(EntityID entity) const {
-        return false;
+        size_t index = GetComponentIndex<T>();
+        size_t storageIndex = mEntities[entity].mComponents[index];
+        return storageIndex != kNullComponent;
     }
 
     template <typename T>
     T& GetComponent(EntityID entity) {
-        // Re-write code
-        static T dummy;
-        return dummy;
+        if (HasComponent<T>(entity)) {
+            size_t index = GetComponentIndex<T>();
+            size_t storageIndex = mEntities[entity].mComponents[index];
+            return GetComponentStorage<T>().mStorage[storageIndex];
+        }
     }
 
     template <typename T>
     ComponentStorage<T>& GetComponentStorage() {
-        // Re-write code
-        static ComponentStorage<T> dummy;
-        return dummy;
+        return std::get<ComponentStorage<T>>(mComponents);
     }
 
 private:
+    std::tuple<ComponentStorage<Components>...> mComponents;
+    std::vector<Entity> mEntities;
+    std::vector<size_t> mFreeEntities;
+
+    template <typename T>
+    static constexpr size_t GetComponentIndex() {
+        constexpr bool matches[] = {
+            std::is_same_v<T, Components>...
+        };
+
+        for (size_t i = 0; i < sizeof...(Components); ++i) {
+            if (matches[i]) {
+                return i;
+            }
+        }
+
+        return kNullComponent;
+    }
 };
 
 }  // namespace ECSEngine

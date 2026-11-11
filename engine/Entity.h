@@ -2,6 +2,8 @@
 
 #include <array>
 #include <tuple>
+#include <string>
+#include <vector>
 
 // An entity can have any component it is templated with,
 // but does not have these installed by default.
@@ -20,6 +22,8 @@ private:
     Entity(EntityID eid, const std::string& name) : mID(eid), mType(name) {}
     EntityID mID;
     std::string mType;
+
+    std::vector<size_t> mComponents;
 
     template <typename... T>
     friend class EntityManager;
