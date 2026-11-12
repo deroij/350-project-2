@@ -1,4 +1,5 @@
 #include "SpriteManager.h"
+#include <stdexcept> //for the git cmake to run because for whatever reason it breaks without it(?)
 
 namespace ECSEngine {
 

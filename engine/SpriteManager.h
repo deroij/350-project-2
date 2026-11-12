@@ -5,6 +5,8 @@
 #include "MathUtil.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
+#include <string>
+#include <vector> //for the github because it breaks the run without it(?)
 
 namespace ECSEngine {
 
