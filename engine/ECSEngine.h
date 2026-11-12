@@ -75,8 +75,9 @@ void ECSEngine<Components...>::Run() {
     while (mWindowManager.GetWindow()->isOpen()) {
         ProcessEvents();
         mSystemManager.Run(this);
-        mWindowManager.GetWindow()->clear();
-        mWindowManager.GetWindow()->display();
+        //mWindowManager.GetWindow()->clear();
+        //mWindowManager.GetWindow()->display();
+        //the screen was flashing with these two in ECSEngine so I commented them out for now
     }
 }
 

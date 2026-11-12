@@ -45,6 +45,22 @@ int main(int argc, char* argv[]) {
     // Load maps
 
     // Place player
+    auto& sprites = engine.GetSpriteManager();
+    auto& entities = engine.GetEntityManager();
+
+    ECSEngine::SpriteID tile = sprites.RegisterTexture(gResourcePath + "spritesheet-tiles-default.png", ECSEngine::Rect{{128, 64}, 64, 64});
+
+    auto testing = entities.CreateEntity("test_tile");
+
+    ECSEngine::LocationComponent loc;
+    loc.loc = {100, 100};
+    entities.AddComponent(testing, loc);
+
+    ECSEngine::SpriteComponent sc;
+    sc.textureID = tile;
+    sc.bounds = ECSEngine::Rect{{0,0}, 64, 64};
+    sc.worldSpace = true;
+    entities.AddComponent(testing, sc);
 
     // Setup score component
 
