@@ -33,6 +33,11 @@ public:
                 continue;
             }
 
+            collisionComp.onGround = false;
+            collisionComp.onRightWall = false;
+            collisionComp.onLeftWall = false;
+            collisionComp.onCeiling = false;
+
             for (const auto& otherEntity : entityManager) {
                 EntityID otherId = otherEntity.GetID();
 
@@ -47,11 +52,6 @@ public:
 
                 auto& otherLocComp = entityManager.template GetComponent<LocationComponent>(otherId);
                 auto& otherCollisionComp = entityManager.template GetComponent<CollisionComponent>(otherId);
-
-                collisionComp.onGround = false;
-                collisionComp.onRightWall = false;
-                collisionComp.onLeftWall = false;
-                collisionComp.onCeiling = false;
 
                 if (RectIntersects(collisionComp.collisionBox, otherCollisionComp.collisionBox)) {
                     // Handle ground collision
