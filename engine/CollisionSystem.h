@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Entity.h"
+#include "CollisionComponent.h"
+#include "LocationComponent.h"
 
 namespace ECSEngine {
 
@@ -53,36 +55,54 @@ public:
                 auto& otherLocComp = entityManager.template GetComponent<LocationComponent>(otherId);
                 auto& otherCollisionComp = entityManager.template GetComponent<CollisionComponent>(otherId);
 
-                if (RectIntersects(collisionComp.collisionBox, otherCollisionComp.collisionBox)) {
-                    // Handle ground collision
-                    if (collisionComp.collisionBox.topLeft.y + collisionComp.collisionBox.height <=
-                        otherCollisionComp.collisionBox.topLeft.y) {
-                        locComp.loc.y = otherCollisionComp.collisionBox.topLeft.y - collisionComp.collisionBox.height;
-                        collisionComp.onGround = true;
+                auto& prevCollisionBox = collisionComp.previousCollisionBox;
+                auto& collisionBox = collisionComp.collisionBox;
+                auto& otherCollisionBox = otherCollisionComp.collisionBox;
+
+                if (otherCollisionComp.staticEntity) {
+                    if (CheckCollision(collisionBox, otherCollisionBox)) {
+                        float overlapX = std::min(collisionBox.topLeft.x + collisionBox.width,
+                             otherCollisionBox.topLeft.x + otherCollisionBox.width) 
+                        - std::max(collisionBox.topLeft.x, otherCollisionBox.topLeft.x);
+
+                        float overlapY = std::min(collisionBox.topLeft.y + collisionBox.height,
+                             otherCollisionBox.topLeft.y + otherCollisionBox.height) 
+                        - std::max(collisionBox.topLeft.y, otherCollisionBox.topLeft.y);
+
+                        if (overlapX < overlapY) {
+                            if (collisionBox.topLeft.x < otherCollisionBox.topLeft.x) {
+                                locComp.loc.x -= overlapX;
+                                collisionComp.onRightWall = true;
+                            } else {
+                                locComp.loc.x += overlapX;
+                                collisionComp.onLeftWall = true;
+                            }
+                        } else {
+                            if (collisionBox.topLeft.y < otherCollisionBox.topLeft.y) {
+                                locComp.loc.y -= overlapY;
+                                collisionComp.onGround = true;
+                            } else {
+                                locComp.loc.y += overlapY;
+                                collisionComp.onCeiling = true;
+                            }
+                        }
                     }
-                    // Handle sides collision
-                    else if (collisionComp.collisionBox.topLeft.x + collisionComp.collisionBox.width <=
-                             otherCollisionComp.collisionBox.topLeft.x) {
-                        locComp.loc.x = otherCollisionComp.collisionBox.topLeft.x - collisionComp.collisionBox.width;
-                        collisionComp.onRightWall = true;
-                    }
-                    else if (collisionComp.collisionBox.topLeft.x >=
-                             otherCollisionComp.collisionBox.topLeft.x + otherCollisionComp.collisionBox.width) {
-                        locComp.loc.x = otherCollisionComp.collisionBox.topLeft.x + otherCollisionComp.collisionBox.width;
-                        collisionComp.onLeftWall = true;
-                    }
-                    // Handle ceiling collision
-                    else if (collisionComp.collisionBox.topLeft.y >=
-                             otherCollisionComp.collisionBox.topLeft.y + otherCollisionComp.collisionBox.height) {
-                        locComp.loc.y = otherCollisionComp.collisionBox.topLeft.y + otherCollisionComp.collisionBox.height;
-                        collisionComp.onCeiling = true;
-                    }
+                }
+                else { 
+                    // Dynamic on dynamic, stars!!!!
                 }
             }
         }
 
         return kContinue;
     }
+    private:
+        bool CheckCollision(const Rect& a, const Rect& b) {
+            return (a.topLeft.x < b.topLeft.x + b.width &&
+                    a.topLeft.x + a.width > b.topLeft.x &&
+                    a.topLeft.y < b.topLeft.y + b.height &&
+                    a.topLeft.y + a.height > b.topLeft.y);
+        }
 };
 
 }  // namespace ECSEngine
