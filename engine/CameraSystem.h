@@ -88,6 +88,8 @@ public:
             windowManager.SetWorldCenter(center);
             windowManager.SetWorldScale(scale);
 
+            // std::cout << "player x " << target.loc.x << "  y " << target.loc.y << "\n";
+            //debugging camera position
         }
         return kContinue;
      }

@@ -33,8 +33,19 @@ public:
 				continue;
 			}
 
+			if(entityManager.template HasComponent<CollisionComponent>(id)){
+				auto& collision = entityManager.template GetComponent<CollisionComponent>(id);
+				if(collision.onGround && movement.velocity.y > 0){
+					movement.velocity.y = 0;
+				}
+				if(collision.onCeiling && movement.velocity.y < 0){
+					movement.velocity.y = 0;
+				}
+			}
+
 			movement.velocity.x += gravity.acceleration.x;
 			movement.velocity.y += gravity.acceleration.y;
+
 		}
 		return kContinue;
 	}

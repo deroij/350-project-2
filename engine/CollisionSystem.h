@@ -94,6 +94,9 @@ public:
                                 // if star, bounce
                             }
                         }
+                        collisionBox.topLeft.x = locComp.loc.x;
+                        collisionBox.topLeft.y = locComp.loc.y;
+                        //jitter was happening with the player
                     }
                 }
                 else { 

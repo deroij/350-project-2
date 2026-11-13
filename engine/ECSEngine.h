@@ -83,6 +83,20 @@ void ECSEngine<Components...>::Run() {
 
 template <typename... Components>
 bool ECSEngine<Components...>::ProcessEvents() {
+
+    auto setKey = [this](int key, bool down){
+        if(key < 0 || key >= static_cast<int>(sf::Keyboard::ScancodeCount)){
+            return;
+        }
+
+        for(const auto& entity : mEntityManager){
+            EntityID id = entity.GetID();
+            if(mEntityManager.template HasComponent<InputComponent>(id)){
+                mEntityManager.template GetComponent<InputComponent>(id).keydown[key] = down;
+            }
+        }
+    };
+
     while (const std::optional event = mWindowManager.GetWindow()->pollEvent())
     {
         if (event->is<sf::Event::Closed>())
@@ -96,7 +110,10 @@ bool ECSEngine<Components...>::ProcessEvents() {
         }
         else if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>()) // Just temp key press handler
         {
-            //int key = static_cast<int>(keyPressed->scancode);
+            setKey(static_cast<int>(keyPressed->scancode), true);
+            return true;
+        } else if(const auto* keyReleased = event->getIf<sf::Event::KeyReleased>()){
+            setKey(static_cast<int>(keyReleased->scancode), false);
             return true;
         }
     }
