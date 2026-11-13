@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Entity.h"
+
 namespace ECSEngine {
 
 template <typename... Components>
@@ -10,7 +12,26 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override { return kContinue; }
+    tSystemReturn Run(EngineView<Components...>* engine) override {
+        auto& entityManager = engine->GetEntityManager();
+
+        for (const auto& entity : entityManager) {
+            EntityID id = entity.GetID();
+
+            if (!entityManager.template HasComponent<LocationComponent>(id) ||
+                !entityManager.template HasComponent<MovementComponent>(id)) {
+                continue;
+            }
+
+            auto& locComp = entityManager.template GetComponent<LocationComponent>(id);
+            auto& moveComp = entityManager.template GetComponent<MovementComponent>(id);
+
+            locComp.loc.x += moveComp.velocity.x;
+            locComp.loc.y += moveComp.velocity.y;
+        }
+
+        return kContinue;
+    }
 };
 
 }  // namespace ECSEngine

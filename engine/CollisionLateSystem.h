@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Entity.h"
+
 namespace ECSEngine {
 
 template <typename... Components>
@@ -10,7 +12,27 @@ public:
         return name;
     }
 
-    tSystemReturn Run(EngineView<Components...>* engine) override { return kContinue; }
+    tSystemReturn Run(EngineView<Components...>* engine) override {
+        auto& entityManager = engine->GetEntityManager();
+
+        for (const auto& entity : entityManager){
+            EntityID id = entity.GetID();
+
+            if(!entityManager.template HasComponent<CollisionComponent>(id)) {
+                continue;
+            }
+
+            auto &collisionComp = entityManager.template GetComponent<CollisionComponent>(id);
+
+            if (collisionComp.staticEntity) {
+                continue;
+            }
+
+            collisionComp.previousCollisionBox = collisionComp.collisionBox;
+        }
+
+        return kContinue;
+    }
 };
 
 }  // namespace ECSEngine
