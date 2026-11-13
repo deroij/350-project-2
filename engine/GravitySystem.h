@@ -34,7 +34,7 @@ public:
 			}
 
 			movement.velocity.x += gravity.acceleration.x;
-			movement.velocity.y += gravity.aceleration.y;
+			movement.velocity.y += gravity.acceleration.y;
 		}
 		return kContinue;
 	}
