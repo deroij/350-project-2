@@ -31,7 +31,7 @@ public:
             collisionComp.collisionBox.topLeft.x = locComp.loc.x;
             collisionComp.collisionBox.topLeft.y = locComp.loc.y;
 
-            if (collisionComp.staticEntity) {
+            if (collisionComp.staticEntity || !entityManager.template HasComponent<MovementComponent>(id)) {
                 continue;
             }
 
@@ -52,7 +52,6 @@ public:
                     continue;
                 }
 
-                auto& otherLocComp = entityManager.template GetComponent<LocationComponent>(otherId);
                 auto& otherCollisionComp = entityManager.template GetComponent<CollisionComponent>(otherId);
 
                 auto& prevCollisionBox = collisionComp.previousCollisionBox;
@@ -61,6 +60,11 @@ public:
 
                 if (otherCollisionComp.staticEntity) {
                     if (CheckCollision(collisionBox, otherCollisionBox)) {
+                        bool wasAbove = prevCollisionBox.topLeft.y + prevCollisionBox.height <= otherCollisionBox.topLeft.y;
+                        bool wasBelow = prevCollisionBox.topLeft.y >= otherCollisionBox.topLeft.y + otherCollisionBox.height;
+                        bool wasLeft = prevCollisionBox.topLeft.x + prevCollisionBox.width <= otherCollisionBox.topLeft.x;
+                        bool wasRight = prevCollisionBox.topLeft.x >= otherCollisionBox.topLeft.x + otherCollisionBox.width;
+
                         float overlapX = std::min(collisionBox.topLeft.x + collisionBox.width,
                              otherCollisionBox.topLeft.x + otherCollisionBox.width) 
                         - std::max(collisionBox.topLeft.x, otherCollisionBox.topLeft.x);
@@ -70,26 +74,30 @@ public:
                         - std::max(collisionBox.topLeft.y, otherCollisionBox.topLeft.y);
 
                         if (overlapX < overlapY) {
-                            if (collisionBox.topLeft.x < otherCollisionBox.topLeft.x) {
+                            if (wasLeft || (!wasRight && collisionBox.topLeft.x < otherCollisionBox.topLeft.x)) {
                                 locComp.loc.x -= overlapX;
                                 collisionComp.onRightWall = true;
+                                // if star, bounce
                             } else {
                                 locComp.loc.x += overlapX;
                                 collisionComp.onLeftWall = true;
+                                // if star, bounce
                             }
                         } else {
-                            if (collisionBox.topLeft.y < otherCollisionBox.topLeft.y) {
+                            if (wasAbove || (!wasBelow && collisionBox.topLeft.y < otherCollisionBox.topLeft.y)) {
                                 locComp.loc.y -= overlapY;
                                 collisionComp.onGround = true;
+                                // if star, bounce
                             } else {
                                 locComp.loc.y += overlapY;
                                 collisionComp.onCeiling = true;
+                                // if star, bounce
                             }
                         }
                     }
                 }
                 else { 
-                    // Dynamic on dynamic, stars!!!!
+                    // Dynamic on dynamic: player on stars and stars and stars
                 }
             }
         }
