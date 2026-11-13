@@ -50,6 +50,11 @@ void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
 
     std::unordered_map<char, TileDef> dict;
 
+    TileDef starDef;
+    starDef.sprite = sprites.RegisterTexture(path + "spritesheet-tiles-default.png", ECSEngine::Rect{{640, 320}, 64, 64});
+    starDef.bounds = ECSEngine::Rect{{0,0}, 64, 64};
+    dict['s'] = starDef;
+
     std::string token;
     while(in >> token && token != "map"){
         char c  = token[0];
@@ -84,6 +89,28 @@ void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
             float y = originY + row * tileH;
 
             if(c == 'S'){
+                auto e = entities.CreateEntity("spawn");
+
+                ECSEngine::LocationComponent loc;
+                loc.loc.x = x;
+                loc.loc.y = y;
+                entities.AddComponent(e, loc);
+
+                ECSEngine::SpawnComponent spawn;
+                spawn.entityID = e;
+                spawn.spawnType = "star";
+                spawn.spawnTextureID = dict['s'].sprite;
+                spawn.timeBetweenSpawns = 180;
+                spawn.timeToNextSpawn = 0;
+                spawn.totalSpawns = 12;
+                entities.AddComponent(e, spawn);
+
+                ECSEngine::SpriteComponent spriteComponent;
+                spriteComponent.textureID = dict['S'].sprite;
+                spriteComponent.bounds = dict['S'].bounds;
+                spriteComponent.worldSpace = true;
+                entities.AddComponent(e, spriteComponent);
+
                 continue;
             }
 
@@ -138,7 +165,7 @@ int main(int argc, char* argv[]) {
     LoadMap(engine, gResourcePath, "world.map");
 
     // Place player
-    ECSEngine::SpriteID playerTile = sprites.RegisterTexture(gResourcePath + "spritesheet-tiles-default.png", ECSEngine::Rect{{128, 64}, 64, 64});
+    ECSEngine::SpriteID playerTile = sprites.RegisterTexture(gResourcePath + "spritesheet-characters-default.png", ECSEngine::Rect{{0, 640}, 128, 128});
     auto player = entities.CreateEntity("player");
 
     ECSEngine::LocationComponent playerLoc;
@@ -167,6 +194,12 @@ int main(int argc, char* argv[]) {
     ECSEngine::CollisionComponent playerCollision{};
     playerCollision.collisionBox = ECSEngine::Rect{{playerLoc.loc.x, playerLoc.loc.y}, 64, 64};
     entities.AddComponent(player, playerCollision);
+
+    ECSEngine::RespawnComponent playerRespawn{};
+    playerRespawn.loc.x = 700.0;
+    playerRespawn.loc.y = 100.0;
+    entities.AddComponent(player, playerRespawn);
+
     // Setup score component
 
     // Setup Camera

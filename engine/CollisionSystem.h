@@ -3,6 +3,8 @@
 #include "Entity.h"
 #include "CollisionComponent.h"
 #include "LocationComponent.h"
+#include "ScoreComponent.h"
+#include "InputComponent.h"
 
 namespace ECSEngine {
 
@@ -16,6 +18,8 @@ public:
 
     tSystemReturn Run(EngineView<Components...>* engine) override {
         auto& entityManager = engine->GetEntityManager();
+
+        int score = 0;
 
         for (const auto& entity : entityManager) {
             EntityID id = entity.GetID();
@@ -58,8 +62,18 @@ public:
                 auto& collisionBox = collisionComp.collisionBox;
                 auto& otherCollisionBox = otherCollisionComp.collisionBox;
 
+                bool isPlayer = entityManager.template HasComponent<InputComponent>(id);
+
                 if (otherCollisionComp.staticEntity) {
                     if (CheckCollision(collisionBox, otherCollisionBox)) {
+                        if (isPlayer && otherCollisionComp.doesDamage) {
+                            auto& respawn = entityManager.template GetComponent<RespawnComponent>(otherId);
+                            locComp.loc = respawn.loc;
+                            collisionComp.collisionBox.topLeft.x = locComp.loc.x;
+                            collisionComp.collisionBox.topLeft.y = locComp.loc.y;
+                            continue;
+                        }
+
                         bool wasAbove = prevCollisionBox.topLeft.y + prevCollisionBox.height <= otherCollisionBox.topLeft.y;
                         bool wasBelow = prevCollisionBox.topLeft.y >= otherCollisionBox.topLeft.y + otherCollisionBox.height;
                         bool wasLeft = prevCollisionBox.topLeft.x + prevCollisionBox.width <= otherCollisionBox.topLeft.x;
@@ -77,21 +91,29 @@ public:
                             if (wasLeft || (!wasRight && collisionBox.topLeft.x < otherCollisionBox.topLeft.x)) {
                                 locComp.loc.x -= overlapX;
                                 collisionComp.onRightWall = true;
-                                // if star, bounce
+                                if (!isPlayer && entityManager.template HasComponent<MovementComponent>(id)) {
+                                    auto& movement = entityManager.template GetComponent<MovementComponent>(id);
+                                    movement.velocity.x = movement.velocity.x * -0.5;  // Bounce off the wall
+                                }
                             } else {
                                 locComp.loc.x += overlapX;
                                 collisionComp.onLeftWall = true;
-                                // if star, bounce
+                                if (!isPlayer && entityManager.template HasComponent<MovementComponent>(id)) {
+                                    auto& movement = entityManager.template GetComponent<MovementComponent>(id);
+                                    movement.velocity.x = movement.velocity.x * -0.5;  // Bounce off the wall
+                                }
                             }
                         } else {
                             if (wasAbove || (!wasBelow && collisionBox.topLeft.y < otherCollisionBox.topLeft.y)) {
                                 locComp.loc.y -= overlapY;
                                 collisionComp.onGround = true;
-                                // if star, bounce
                             } else {
                                 locComp.loc.y += overlapY;
                                 collisionComp.onCeiling = true;
-                                // if star, bounce
+                                if (!isPlayer && entityManager.template HasComponent<MovementComponent>(id)) {
+                                    auto& movement = entityManager.template GetComponent<MovementComponent>(id);
+                                    movement.velocity.y = movement.velocity.y * -0.5;  // Bounce off the ceiling
+                                }
                             }
                         }
                         collisionBox.topLeft.x = locComp.loc.x;
@@ -100,8 +122,89 @@ public:
                     }
                 }
                 else { 
-                    // Dynamic on dynamic: player on stars and stars and stars
+                    if (CheckCollision(collisionBox, otherCollisionBox)) {
+                        if (isPlayer) {
+                            score += 11;
+                            entityManager.RemoveEntity(otherId);
+                        }
+                        else if (entityManager.template HasComponent<InputComponent>(otherId)) {
+                            score += 11;
+                            entityManager.RemoveEntity(id);
+                            break;  // Exit the loop since the entity has been removed
+                        }
+                        else {
+                            auto& movement = entityManager.template GetComponent<MovementComponent>(id);
+                            auto& otherMovement = entityManager.template GetComponent<MovementComponent>(otherId);
+                            auto& otherLocComp = entityManager.template GetComponent<LocationComponent>(otherId);
+
+                            float overlapX = std::min(collisionBox.topLeft.x + collisionBox.width,
+                                otherCollisionBox.topLeft.x + otherCollisionBox.width) 
+                                - std::max(collisionBox.topLeft.x, otherCollisionBox.topLeft.x);
+
+                            float overlapY = std::min(collisionBox.topLeft.y + collisionBox.height,
+                                otherCollisionBox.topLeft.y + otherCollisionBox.height) 
+                                - std::max(collisionBox.topLeft.y,otherCollisionBox.topLeft.y);
+
+                            if (overlapX < overlapY) {
+                                float separation = overlapX * 0.5f;
+
+                                if (collisionBox.topLeft.x < otherCollisionBox.topLeft.x) {
+                                    locComp.loc.x -= separation;
+                                    otherLocComp.loc.x += separation;
+                                }
+                                else {
+                                    locComp.loc.x += separation;
+                                    otherLocComp.loc.x -= separation;
+                                }
+
+                                float velocityA = movement.velocity.x;
+                                float velocityB = otherMovement.velocity.x;
+
+                                if ((velocityA - velocityB) * (collisionBox.topLeft.x - otherCollisionBox.topLeft.x) < 0) {
+                                    movement.velocity.x = velocityB * -0.9f;
+                                    otherMovement.velocity.x = velocityA * -0.9f;
+                                }
+                            }
+                            else {
+                                float separation = overlapY * 0.5f;
+
+                                if (collisionBox.topLeft.y < otherCollisionBox.topLeft.y) {
+                                    locComp.loc.y -= separation;
+                                    otherLocComp.loc.y += separation;
+                                }
+                                else {
+                                    locComp.loc.y += separation;
+                                    otherLocComp.loc.y -= separation;
+                                }
+
+                                float velocityA = movement.velocity.y;
+                                float velocityB = otherMovement.velocity.y;
+
+                                if ((velocityA - velocityB) *
+                                    (collisionBox.topLeft.y - otherCollisionBox.topLeft.y) < 0) {
+                                    movement.velocity.y = velocityB * -0.9f;
+                                    otherMovement.velocity.y = velocityA * -0.9f;
+                                }
+                            }
+                            collisionBox.topLeft.x = locComp.loc.x;
+                            collisionBox.topLeft.y = locComp.loc.y;
+
+                            otherCollisionBox.topLeft.x = otherLocComp.loc.x;
+                            otherCollisionBox.topLeft.y = otherLocComp.loc.y;
+                        }
+                    }
                 }
+            }
+
+            for (const auto& entity : entityManager) {
+                EntityID id = entity.GetID();
+
+                if (!entityManager.template HasComponent<ScoreComponent>(id)){
+                    continue;
+                }
+
+                auto& scoreComp = entityManager.template GetComponent<ScoreComponent>(id);
+                scoreComp.score += score;
             }
         }
 
