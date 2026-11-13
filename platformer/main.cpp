@@ -28,7 +28,9 @@ std::string gResourcePath = "../assets/";
         ECSEngine::CameraShake, ECSEngine::ScoreComponent, ECSEngine::RespawnComponent
 using Engine = ECSEngine::ECSEngine<COMPONENTS>;
 
-void LoadMap(Engine& engine, const std::string& path, const std::string& file) {}
+void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
+    
+}
 
 int main(int argc, char* argv[]) {
     if (argc >= 3 && argv[1] == std::string("-path")) {
@@ -43,27 +45,8 @@ int main(int argc, char* argv[]) {
     // Load sounds
 
     // Load maps
-
+    
     // Place player
-    //--- start testing ---
-    // auto& sprites = engine.GetSpriteManager();
-    // auto& entities = engine.GetEntityManager();
-
-    // ECSEngine::SpriteID tile = sprites.RegisterTexture(gResourcePath + "spritesheet-tiles-default.png", ECSEngine::Rect{{128, 64}, 64, 64});
-
-    // auto testing = entities.CreateEntity("test_tile");
-
-    // ECSEngine::LocationComponent loc;
-    // loc.loc = {100, 100};
-    // entities.AddComponent(testing, loc);
-
-    // ECSEngine::SpriteComponent sprite;
-    // sprite.textureID = tile;
-    // sprite.bounds = ECSEngine::Rect{{0,0}, 64, 64};
-    // sprite.worldSpace = true;
-    // entities.AddComponent(testing, sprite);
-
-    // ^^^^ All for testing purposes, get rid of later
 
     // Setup score component
 

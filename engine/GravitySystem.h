@@ -1,5 +1,9 @@
 #pragma once
 
+#include "EntityManager.h"
+#include "LocationComponent.h"
+#include "SystemManager.h"
+
 namespace ECSEngine
 {
 
@@ -11,6 +15,27 @@ public:
 	
 	tSystemReturn Run(EngineView<Components...> *engine) override
 	{
+		auto& entityManager = engine->GetEntityManager();
+
+		for(const auto& entity : entityManager){
+			EntityID id = entity.GetID();
+
+			if (!entityManager.template HasComponent<GravityComponent>(id) ||
+				!entityManager.template HasComponent<MovementComponent>(id)){
+				continue;
+			}
+
+			auto& gravity = entityManager.template GetComponent<GravityComponent>(id);
+			auto& movement = entityManager.template GetComponent<MovementComponent>(id);
+
+			if(gravity.disabledTimer > 0){
+				--gravity.disabledTimer;
+				continue;
+			}
+
+			movement.velocity.x += gravity.acceleration.x;
+			movement.velocity.y += gravity.aceleration.y;
+		}
 		return kContinue;
 	}
 	
