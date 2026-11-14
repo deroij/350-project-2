@@ -204,6 +204,8 @@ int main(int argc, char* argv[]) {
 
     // Setup Camera
     auto cameraEntity = entities.CreateEntity("camera");
+    ECSEngine::CameraShake cameraShake{};
+    entities.AddComponent(cameraEntity, cameraShake);
 
     ECSEngine::CameraComponent cameraComp;
     cameraComp.worldUnitsPerPixel = 1.0f;

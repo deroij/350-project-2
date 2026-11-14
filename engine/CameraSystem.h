@@ -8,8 +8,14 @@
 #include "SystemManager.h"
 #include "CameraComponent.h"
 #include "EntityManager.h"
+#include "CollisionComponent.h"
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
+
+const int kShakeFrames = 8;
+const float kShakreThreshold = 10;
+const float kShakeScale = 0.3f;
+const float kShakeMax = 12;
 
 namespace ECSEngine {
 
@@ -41,6 +47,34 @@ public:
                 continue;
             }
             auto& target = entityManager.template GetComponent<LocationComponent>(follower.entityID);
+
+            if (entityManager.template HasComponent<CameraShake>(id) &&
+                entityManager.template HasComponent<MovementComponent>(follower.entityID) &&
+                entityManager.template HasComponent<CollisionComponent>(follower.entityID)){
+                    auto& shake = entityManager.template GetComponent<CameraShake>(id);
+                    auto& targetMove = entityManager.template GetComponent<MovementComponent>(follower.entityID);
+                    auto& targetCollision = entityManager.template GetComponent<CollisionComponent>(follower.entityID);
+
+                    if(shake.frameLimit <= 0){
+                        float hitX = 0;
+                        float hitY = 0;
+
+                        if(targetCollision.onGround && targetMove.velocity.y > kShakreThreshold){
+                            hitY = targetMove.velocity.y;
+                        } else if(targetCollision.onCeiling && targetMove.velocity.y < -kShakreThreshold){
+                            hitY = targetMove.velocity.y;
+                        }
+                        if((targetCollision.onLeftWall || targetCollision.onRightWall) && std::fabs(targetMove.velocity.x) > kShakreThreshold){
+                            hitX = targetMove.velocity.x;
+                        }
+
+                        if(hitX != 0 || hitY != 0){
+                            shake.offset.x = std::clamp(hitX * kShakeScale, -kShakeMax, kShakeMax);
+                            shake.offset.y = std::clamp(hitY * kShakeScale, -kShakeMax, kShakeMax);
+                            shake.frameLimit = kShakeFrames;
+                        }
+                    }
+                }
 
             float scale = camera.worldUnitsPerPixel;
 
@@ -78,8 +112,13 @@ public:
             if(entityManager.template HasComponent<CameraShake>(id)){
                 auto& shake = entityManager.template GetComponent<CameraShake>(id);
                 if(shake.frameLimit > 0){
-                    center.x += shake.offset.x;
-                    center.y += shake.offset.y;
+                    float strength = shake.frameLimit / static_cast<float>(kShakeFrames);
+                    float direction = 1.0f;
+                    if(shake.frameLimit % 2 == 0){
+                        direction -= 1.0f;
+                    }
+                    center.x += shake.offset.x * strength * direction;
+                    center.y += shake.offset.y * strength * direction;
                     --shake.frameLimit;
                 }
             }
