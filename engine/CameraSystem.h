@@ -64,7 +64,7 @@ public:
                         } else if(targetCollision.onCeiling && targetMove.velocity.y < -kShakreThreshold){
                             hitY = targetMove.velocity.y;
                         }
-                        if((targetCollision.onLeftWall || targetCollision.onRightWall) && std::fabs(targetMove.velocity.x) > kShakreThreshold){
+                        if((targetCollision.onLeftWall || targetCollision.onRightWall) && std::fabs(targetMove.velocity.x) > kShakeThreshold){
                             hitX = targetMove.velocity.x;
                         }
 
