@@ -4,6 +4,10 @@
 #include "LocationComponent.h"
 #include "SystemManager.h"
 #include "Keyboard.h"
+#include <string>
+
+#include "CollisionComponent.h"
+#include "InputComponent.h"
 
 namespace ECSEngine
 {
