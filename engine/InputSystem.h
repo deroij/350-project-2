@@ -35,6 +35,7 @@ public:
 
     tSystemReturn Run(EngineView<Components...>* engine) override { 
         auto& entityManager = engine->GetEntityManager();
+        auto& soundManager = engine->GetSoundManager();
 
         for(const auto& entity : entityManager){
             EntityID id = entity.GetID();
@@ -88,9 +89,15 @@ public:
 
             if(jumpPressed && !collision.onGround && movement.velocity.y > 0 && (pushingIntoLeftWall || pushingIntoRightWall)){
                 if(pushingIntoLeftWall){
+                    auto& sound = soundManager.GetSound("jump");
+                    sound.play();
+
                     movement.velocity.x = kWallJumpVelocityX;
                     input.wallJumpedFrom = -1;
                 } else {
+                    auto& sound = soundManager.GetSound("jump");
+                    sound.play();
+
                     movement.velocity.x = -kWallJumpVelocityX;
                     input.wallJumpedFrom = 1;
                 }
@@ -124,6 +131,9 @@ public:
 
             
             if(jumpPressed && collision.onGround){ 
+                auto& sound = soundManager.GetSound("jump");
+                sound.play();
+
                 movement.velocity.y = -kJumpVelocity;
             }
 

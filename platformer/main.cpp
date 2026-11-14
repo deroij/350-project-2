@@ -162,6 +162,11 @@ int main(int argc, char* argv[]) {
     auto& entities = engine.GetEntityManager();
 
     // Load sounds
+    auto& sounds = engine.GetSoundManager();
+    sounds.RegisterSound(gResourcePath + "footstep_grass_003.ogg", "slide");
+    sounds.RegisterSound(gResourcePath + "sfx_jump.ogg", "jump");
+    sounds.RegisterSound(gResourcePath + "sfx_gem.ogg", "coin");
+    sounds.RegisterSound(gResourcePath + "footstep_snow_001.ogg", "land");
 
     // Load maps
     LoadMap(engine, gResourcePath, "sky.map");

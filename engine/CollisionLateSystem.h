@@ -28,6 +28,18 @@ public:
                 continue;
             }
 
+            if (collisionComp.onGround) {
+                collisionComp.wasOnGround = true;
+            } else {
+                collisionComp.wasOnGround = false;
+            }
+
+            if (collisionComp.onLeftWall || collisionComp.onRightWall){
+                collisionComp.wasOnWall = true;
+            } else {
+                collisionComp.wasOnWall = false;
+            }
+
             collisionComp.previousCollisionBox = collisionComp.collisionBox;
         }
 

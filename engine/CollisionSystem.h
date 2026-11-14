@@ -18,6 +18,7 @@ public:
 
     tSystemReturn Run(EngineView<Components...>* engine) override {
         auto& entityManager = engine->GetEntityManager();
+        auto& soundManager = engine->GetSoundManager();
 
         int score = 0;
 
@@ -96,6 +97,11 @@ public:
                                 if (!isPlayer && entityManager.template HasComponent<MovementComponent>(id)) {
                                     auto& movement = entityManager.template GetComponent<MovementComponent>(id);
                                     movement.velocity.x = movement.velocity.x * -0.5;  // Bounce off the wall
+                                } else if (isPlayer) {
+                                    if (!collisionComp.wasOnWall){
+                                        auto& sound = soundManager.GetSound("slide");
+                                        sound.play();
+                                    }
                                 }
                             } else {
                                 locComp.loc.x += overlapX;
@@ -103,6 +109,11 @@ public:
                                 if (!isPlayer && entityManager.template HasComponent<MovementComponent>(id)) {
                                     auto& movement = entityManager.template GetComponent<MovementComponent>(id);
                                     movement.velocity.x = movement.velocity.x * -0.5;  // Bounce off the wall
+                                } else if (isPlayer) {
+                                    if (!collisionComp.wasOnWall){
+                                        auto& sound = soundManager.GetSound("slide");
+                                        sound.play();
+                                    }
                                 }
                             }
                         } else {
@@ -112,6 +123,11 @@ public:
                                 if (!isPlayer){
                                     auto& movement = entityManager.template GetComponent<MovementComponent>(id);
                                     movement.velocity.y = 0.1f;
+                                } else {
+                                    if (!collisionComp.wasOnGround){
+                                        auto& sound = soundManager.GetSound("land");
+                                        sound.play();
+                                    }
                                 }
                             } else {
                                 locComp.loc.y += overlapY;
@@ -131,15 +147,21 @@ public:
                     bool hasCollided = false;
                     if (CheckCollision(collisionBox, otherCollisionBox) && !hasCollided) {
                         if (isPlayer) {
+                            hasCollided = true;
                             entityManager.RemoveEntity(otherId);
                             score += 11;
-                            hasCollided = true;
+
+                            auto& sound = soundManager.GetSound("coin");
+                            sound.play();
                         }
                         else if (entityManager.template HasComponent<InputComponent>(otherId)) {
+                            hasCollided = true;
                             entityManager.RemoveEntity(id);
                             score += 11;
-                            hasCollided = true;
-                            break;  // Exit the loop since the entity has been removed
+
+                            auto& sound = soundManager.GetSound("coin");
+                            sound.play();
+                            break;
                         }
                         else {
                             auto& movement = entityManager.template GetComponent<MovementComponent>(id);
