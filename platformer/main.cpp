@@ -138,6 +138,9 @@ void LoadMap(Engine& engine, const std::string& path, const std::string& file) {
                 cc.collisionBox = ECSEngine::Rect{
                     {x + it->second.bounds.topLeft.x, y + it->second.bounds.topLeft.y},
                     it->second.bounds.width, it->second.bounds.height};
+                if (c == 'x'){
+                    cc.doesDamage = true;
+                }
                 entities.AddComponent(e, cc);
             }
         }

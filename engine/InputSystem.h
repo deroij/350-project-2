@@ -12,13 +12,13 @@
 namespace ECSEngine {
 
 const float kMaxRunVelocity = 6;
-const float kDashVelocity = 24;
+const float kDashVelocity = 40;
 const float kJumpVelocity = 25;
 const float kGroundRunAcceleration = 1;
 const float kAirRunAcceleration = 0.8f;
 const float kDashInterval = 25;
 
-const int kDashCooldown = 60;
+const int kDashCooldown = 30;
 const int kDashFrames = 5;
 
 const float kWallJumpVelocityX = 14;
@@ -62,9 +62,12 @@ public:
 
             bool dashing = input.lastDash > kDashCooldown - kDashFrames;
 
+            bool pushingIntoLeftWall = collision.onLeftWall && left;
+            bool pushingIntoRightWall = collision.onRightWall && right;
+
             bool dashPressed = input.keydown[Key::C] && !input.lastKeydown[Key::C];
             if(dashPressed && input.lastDash <= 0 && (left != right)){
-                if(right){
+                if((right && !pushingIntoRightWall) || (left && pushingIntoLeftWall)){
                     movement.velocity.x = kDashVelocity;
                 } else {
                     movement.velocity.x = -kDashVelocity;
@@ -83,14 +86,13 @@ public:
             }
             bool wallJumping = input.wallJumpProtection > 0;
 
-            bool pushingIntoLeftWall = collision.onLeftWall && left;
-            bool pushingIntoRightWall = collision.onRightWall && right;
-
             if(jumpPressed && !collision.onGround && movement.velocity.y > 0 && (pushingIntoLeftWall || pushingIntoRightWall)){
                 if(pushingIntoLeftWall){
                     movement.velocity.x = kWallJumpVelocityX;
+                    input.wallJumpedFrom = -1;
                 } else {
                     movement.velocity.x = -kWallJumpVelocityX;
+                    input.wallJumpedFrom = 1;
                 }
 
                 movement.velocity.y = -kWallJumpVelocityY;
@@ -98,10 +100,11 @@ public:
                 wallJumping = true;
             }
 
-            if(!dashing && !wallJumping){
+            if(!dashing){
                 float accel;
                 if(collision.onGround){
                     accel = kGroundRunAcceleration;
+                    input.wallJumpedFrom = 0;
                 } else {
                     accel = kAirRunAcceleration;
                 }
@@ -114,7 +117,9 @@ public:
                     movement.velocity.x = 0;
                 }
 
-                movement.velocity.x = std::clamp(movement.velocity.x, -kMaxRunVelocity, kMaxRunVelocity);
+                if (!((input.wallJumpedFrom == -1 && right) || (input.wallJumpedFrom == 1 && left))) {
+                    movement.velocity.x = std::clamp(movement.velocity.x, -kMaxRunVelocity, kMaxRunVelocity);
+                }
             }
 
             
@@ -132,7 +137,7 @@ public:
         }
 
         return kContinue;
-     }
+    }
 };
 
 }  // namespace ECSEngine

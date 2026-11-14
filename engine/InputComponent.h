@@ -17,6 +17,9 @@ struct InputComponent {
     int wallJumpProtection = 0;
     std::bitset<sf::Keyboard::ScancodeCount> keydown;
     std::bitset<sf::Keyboard::ScancodeCount> lastKeydown;
+
+    //Added to help with wall control
+    int wallJumpedFrom = 0;
 };
 
 }  // namespace ECSEngine

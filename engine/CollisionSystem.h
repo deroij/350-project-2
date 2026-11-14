@@ -67,10 +67,12 @@ public:
                 if (otherCollisionComp.staticEntity) {
                     if (CheckCollision(collisionBox, otherCollisionBox)) {
                         if (isPlayer && otherCollisionComp.doesDamage) {
-                            auto& respawn = entityManager.template GetComponent<RespawnComponent>(otherId);
+                            auto& movement = entityManager.template GetComponent<MovementComponent>(id);
+                            auto& respawn = entityManager.template GetComponent<RespawnComponent>(id);
                             locComp.loc = respawn.loc;
                             collisionComp.collisionBox.topLeft.x = locComp.loc.x;
                             collisionComp.collisionBox.topLeft.y = locComp.loc.y;
+                            movement.velocity = Point2D(0,0);
                             continue;
                         }
 
