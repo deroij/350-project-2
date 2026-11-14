@@ -21,6 +21,10 @@ const float kDashInterval = 25;
 const int kDashCooldown = 60;
 const int kDashFrames = 5;
 
+const float kWallJumpVelocityX = 14;
+const float kWallJumpVelocityY = 25;
+const int kWallJumpFrames = 16;
+
 template <typename... Components>
 class InputSystem : public System<Components...> {
 public:
@@ -45,11 +49,12 @@ public:
             auto& movement = entityManager.template GetComponent<MovementComponent>(id);
             auto& collision = entityManager.template GetComponent<CollisionComponent>(id);
 
-            //May need to change later for y acceleration and x acceleration
-            
-
             bool left = input.keydown[Key::Left];
             bool right = input.keydown[Key::Right];
+
+            bool jumpDown = input.keydown[Key::Z];
+            bool jumpWasDown = input.lastKeydown[Key::Z];
+            bool jumpPressed = jumpDown && !jumpWasDown;
 
             if(input.lastDash > 0){
                 --input.lastDash;
@@ -73,7 +78,27 @@ public:
                 }
             }
 
-            if(!dashing){
+            if(input.wallJumpProtection > 0){
+                --input.wallJumpProtection;
+            }
+            bool wallJumping = input.wallJumpProtection > 0;
+
+            bool pushingIntoLeftWall = collision.onLeftWall && left;
+            bool pushingIntoRightWall = collision.onRightWall && right;
+
+            if(jumpPressed && !collision.onGround && movement.velocity.y > 0 && (pushingIntoLeftWall || pushingIntoRightWall)){
+                if(pushingIntoLeftWall){
+                    movement.velocity.x = kWallJumpVelocityX;
+                } else {
+                    movement.velocity.x = -kWallJumpVelocityX;
+                }
+
+                movement.velocity.y = -kWallJumpVelocityY;
+                input.wallJumpProtection = kWallJumpFrames;
+                wallJumping = true;
+            }
+
+            if(!dashing && !wallJumping){
                 float accel;
                 if(collision.onGround){
                     accel = kGroundRunAcceleration;
@@ -92,10 +117,7 @@ public:
                 movement.velocity.x = std::clamp(movement.velocity.x, -kMaxRunVelocity, kMaxRunVelocity);
             }
 
-            bool jumpDown = input.keydown[Key::Z];
-            bool jumpWasDown = input.lastKeydown[Key::Z];
-
-            bool jumpPressed = jumpDown && !jumpWasDown;
+            
             if(jumpPressed && collision.onGround){ 
                 movement.velocity.y = -kJumpVelocity;
             }

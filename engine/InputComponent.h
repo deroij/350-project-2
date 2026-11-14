@@ -14,6 +14,7 @@ struct InputComponent {
     InputComponent(EntityID whichEntity) : entity(whichEntity), lastDash(0) {}
     EntityID entity;
     int lastDash;
+    int wallJumpProtection = 0;
     std::bitset<sf::Keyboard::ScancodeCount> keydown;
     std::bitset<sf::Keyboard::ScancodeCount> lastKeydown;
 };
