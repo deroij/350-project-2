@@ -2,7 +2,6 @@
 
 #include <unordered_map>
 #include <algorithm>   
-#include <cmath>      
 
 
 #include "LocationComponent.h"
@@ -67,7 +66,7 @@ public:
                         } else if(targetCollision.onCeiling && targetMove.velocity.y < -kShakeThreshold){
                             hitY = targetMove.velocity.y;
                         }
-                        if((targetCollision.onLeftWall || targetCollision.onRightWall) && std::fabs(targetMove.velocity.x) > kShakeThreshold){
+                        if((targetCollision.onLeftWall || targetCollision.onRightWall) && (targetMove.velocity.x > kShakeThreshold || targetMove.velocity.x < -kShakeThreshold)){
                             hitX = targetMove.velocity.x;
                         }
 
