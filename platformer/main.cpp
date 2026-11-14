@@ -204,6 +204,30 @@ int main(int argc, char* argv[]) {
     entities.AddComponent(player, playerRespawn);
 
     // Setup score component
+    auto scoreManager = entities.CreateEntity("scoreM");
+
+    ECSEngine::ScoreComponent scoreComp{};
+    for (int i = 0; i < 10; i++){
+        ECSEngine::SpriteID number = sprites.RegisterTexture(gResourcePath + "spritesheet-tiles-default.png", ECSEngine::Rect{{832, 832 - 64 * i}, 64, 64});
+        scoreComp.digitTextureID[i] = number;
+    }
+
+    for (int i = 0; i < 3; i++){
+        auto score = entities.CreateEntity("score" + std::to_string(i));
+        ECSEngine::LocationComponent scoreLoc{};
+        scoreLoc.loc.x = 128 - 64*i;
+        scoreLoc.loc.y = 0;
+        entities.AddComponent(score, scoreLoc);
+        
+        ECSEngine::SpriteComponent sprite{};
+        sprite.worldSpace = false;
+        sprite.bounds = ECSEngine::Rect{ECSEngine::Point2D(0,0), 64, 64};
+        sprite.textureID = scoreComp.digitTextureID[0];
+        entities.AddComponent(score, sprite);
+
+        scoreComp.digitID[i] = score;
+    }
+    entities.AddComponent(scoreManager, scoreComp);
 
     // Setup Camera
     auto cameraEntity = entities.CreateEntity("camera");

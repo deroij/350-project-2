@@ -61,10 +61,9 @@ public:
             cc.previousCollisionBox = Rect{{0,0}, 64, 64};
             entityManager.template AddComponent<CollisionComponent>(newEntityID, cc);
 
-            entityManager.template AddComponent<MovementComponent>(newEntityID, MovementComponent{Point2D{3, 1}});
+            float direction = ((spawnComp.totalSpawns % 4) - 2) * 2.0f;
+            entityManager.template AddComponent<MovementComponent>(newEntityID, MovementComponent{Point2D{direction, 1.0f}});
             entityManager.template AddComponent<GravityComponent>(newEntityID, GravityComponent{Point2D{0, 1}});
-
-            // This is where we add dynamic star behaviour
         }
 
         return kContinue;

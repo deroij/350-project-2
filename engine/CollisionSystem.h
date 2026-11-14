@@ -109,6 +109,10 @@ public:
                             if (wasAbove || (!wasBelow && collisionBox.topLeft.y < otherCollisionBox.topLeft.y)) {
                                 locComp.loc.y -= overlapY;
                                 collisionComp.onGround = true;
+                                if (!isPlayer){
+                                    auto& movement = entityManager.template GetComponent<MovementComponent>(id);
+                                    movement.velocity.y = 0.1f;
+                                }
                             } else {
                                 locComp.loc.y += overlapY;
                                 collisionComp.onCeiling = true;
@@ -124,14 +128,17 @@ public:
                     }
                 }
                 else { 
-                    if (CheckCollision(collisionBox, otherCollisionBox)) {
+                    bool hasCollided = false;
+                    if (CheckCollision(collisionBox, otherCollisionBox) && !hasCollided) {
                         if (isPlayer) {
-                            score += 11;
                             entityManager.RemoveEntity(otherId);
+                            score += 11;
+                            hasCollided = true;
                         }
                         else if (entityManager.template HasComponent<InputComponent>(otherId)) {
-                            score += 11;
                             entityManager.RemoveEntity(id);
+                            score += 11;
+                            hasCollided = true;
                             break;  // Exit the loop since the entity has been removed
                         }
                         else {
