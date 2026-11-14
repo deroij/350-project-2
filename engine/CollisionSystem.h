@@ -226,17 +226,17 @@ public:
                     }
                 }
             }
+        }
 
-            for (const auto& entity : entityManager) {
-                EntityID id = entity.GetID();
+        for (const auto& entity : entityManager) {
+            EntityID id = entity.GetID();
 
-                if (!entityManager.template HasComponent<ScoreComponent>(id)){
-                    continue;
-                }
-
-                auto& scoreComp = entityManager.template GetComponent<ScoreComponent>(id);
-                scoreComp.score += score;
+            if (!entityManager.template HasComponent<ScoreComponent>(id)){
+                continue;
             }
+
+            auto& scoreComp = entityManager.template GetComponent<ScoreComponent>(id);
+            scoreComp.score += score;
         }
 
         return kContinue;

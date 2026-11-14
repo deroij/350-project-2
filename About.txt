@@ -1,0 +1,29 @@
+Implemented:
+Engine:
+- ECSEngine.h
+- EntityManager.h
+- SoundManager.h
+- SpriteManager.h
+- SystemManager.h
+- WindowManager.h
+
+- CameraSystem.h
+- CollisionComponent.h (tweaked)
+- CollisionLateSystem.h
+- CollisionSystem.h
+- GravitySystem.h
+- InputComponent.h (tweaked)
+- InputSystem.h
+- MovementSystem.h
+- ScoreSystem.h
+- SpawnSystem.h
+- SpriteSystem.h
+
+Platformer
+- main.cpp
+
+Implementation
+50% Noel - CollisionSystem, EntityManager, ECSEngine, etc.
+50% Mel - CameraSystem, SpriteManager, InputSystem, etc.
+
+No AI was used.
