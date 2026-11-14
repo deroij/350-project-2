@@ -43,9 +43,17 @@ public:
             auto& spriteComp = entityManager.template GetComponent<SpriteComponent>(id);
             auto& location = entityManager.template GetComponent<LocationComponent>(id);
 
-            Rect rect{{location.loc.x + spriteComp.bounds.topLeft.x, location.loc.y + spriteComp.bounds.topLeft.y},
+            Rect rect;
+
+            if (entityManager.template HasComponent<InputComponent>(id)) {
+                rect = Rect{{location.loc.x + spriteComp.bounds.topLeft.x, location.loc.y + spriteComp.bounds.topLeft.y},
+                        spriteComp.bounds.width * 2.0f, spriteComp.bounds.height * 2.0f};
+            } else {
+                rect = Rect{{location.loc.x + spriteComp.bounds.topLeft.x, location.loc.y + spriteComp.bounds.topLeft.y},
                         spriteComp.bounds.width, spriteComp.bounds.height};
             
+            }
+
             if(spriteComp.worldSpace){
                 rect = windowManager.WorldToWindow(rect);
             }

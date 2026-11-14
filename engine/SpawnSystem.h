@@ -62,7 +62,7 @@ public:
             entityManager.template AddComponent<CollisionComponent>(newEntityID, cc);
 
             entityManager.template AddComponent<MovementComponent>(newEntityID, MovementComponent{Point2D{3, 1}});
-            entityManager.template AddComponent<GravityComponent>(newEntityID, GravityComponent{Point2D{0, 0}});
+            entityManager.template AddComponent<GravityComponent>(newEntityID, GravityComponent{Point2D{0, 1}});
 
             // This is where we add dynamic star behaviour
         }

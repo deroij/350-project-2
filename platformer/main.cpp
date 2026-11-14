@@ -175,7 +175,7 @@ int main(int argc, char* argv[]) {
 
     ECSEngine::SpriteComponent playerSprite;
     playerSprite.textureID = playerTile;
-    playerSprite.bounds = ECSEngine::Rect{{0,0}, 64, 64};
+    playerSprite.bounds = ECSEngine::Rect{{-32,-64}, 64, 64};
     playerSprite.worldSpace = true;
     entities.AddComponent(player, playerSprite);
 
