@@ -1,6 +1,9 @@
 #pragma once
 
 #include <unordered_map>
+#include <algorithm>   
+#include <cmath>      
+
 
 #include "LocationComponent.h"
 #include "MathUtil.h"
