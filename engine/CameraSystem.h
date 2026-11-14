@@ -1,6 +1,9 @@
 #pragma once
 
 #include <unordered_map>
+#include <algorithm>   
+#include <cmath>      
+
 
 #include "LocationComponent.h"
 #include "MathUtil.h"
@@ -13,7 +16,7 @@
 #include <SFML/Graphics/Texture.hpp>
 
 const int kShakeFrames = 8;
-const float kShakreThreshold = 10;
+const float kShakeThreshold = 10;
 const float kShakeScale = 0.3f;
 const float kShakeMax = 12;
 
@@ -59,9 +62,9 @@ public:
                         float hitX = 0;
                         float hitY = 0;
 
-                        if(targetCollision.onGround && targetMove.velocity.y > kShakreThreshold){
+                        if(targetCollision.onGround && targetMove.velocity.y > kShakeThreshold){
                             hitY = targetMove.velocity.y;
-                        } else if(targetCollision.onCeiling && targetMove.velocity.y < -kShakreThreshold){
+                        } else if(targetCollision.onCeiling && targetMove.velocity.y < -kShakeThreshold){
                             hitY = targetMove.velocity.y;
                         }
                         if((targetCollision.onLeftWall || targetCollision.onRightWall) && std::fabs(targetMove.velocity.x) > kShakeThreshold){
